@@ -7,38 +7,54 @@
  * is the URL 
  * */
 
-import {verifyMessage} from './verifyMessage';
+import {verifyMessage} from './verifySignature.js';
 
 async function handleRequest(request) {
   const url = new URL(request.url);
 
   // Only use the path for the cache key, removing query strings
   // and always store using HTTPS, for example, https://www.example.com/file-uri-here
-  if (!url.searchParams.has('signature') || !url.searchParams.has('expiry')) {
+  console.log(`got request : ${url}`)
+  if (!url.searchParams.has('cf_sign') || !url.searchParams.has('cf_expiry')) {
     return new Response('Missing query parameter', { status: 403 });
   }
 
-  const publicKey = await importPublicKey(publicKeyPem);
-  decodedSig = base64StringToArrayBuffer(url.searchParams.get('signature'));
-  const expiry = Number(url.searchParams.get('expiry'));
+  const expiry = Number(url.searchParams.get('cf_expiry'));
   const dataToAuthenticate = `${url.pathname}@${expiry}`;
+  const signature = url.searchParams.get('cf_sign')
 
-  const verified = await subtle.verify(signAlgorithm, pub, decodedSig, data);
+  console.log(`data to auth: ${dataToAuthenticate}`);
+
+  const verified = await verifyMessage(dataToAuthenticate, signature);
 
   if (!verified) {
     const body = 'Invalid Signature';
     return new Response(body, { status: 403 });
-  }
+  } 
 
   if (Date.now() > expiry) {
     const body = `URL expired at ${new Date(expiry)}`;
     return new Response(body, { status: 403 });
-  }
+  } */
 
   const cacheKey = `https://${url.hostname}${url.pathname}`;
 
+  console.log(`cache key : ${cacheKey}`);
+
   // TODO: Add S3 specific logic for fetching
-  fetchUrl = ""
+  console.log(`fetching object ${url.pathname} from s3`);
+
+  const s3Bucket = "cloudflare-poc-quay-storage";
+
+  const s3Host = `${s3Bucket}.s3.amazonaws.com`;
+
+  url.searchParams.delete('cf_expiry')
+  url.searchParams.delete('cf_sign')
+  url.host = s3Host;
+
+  const fetchUrl = url.toString();
+
+  console.log(`fetch URL : ${fetchUrl}`);
 
   let response = await fetch(fetchUrl, {
     cf: {

@@ -1,8 +1,8 @@
 name = "quay-cloudflare-cdn-worker"
-type = "javascript"
+type = "webpack"
 
-account_id = ""
+account_id = "2398e241c821b33df663d5c6b87916b9"
 workers_dev = true
-route = ""
-zone_id = ""
+route = "https://cdn01.quaydev.org/*"
+zone_id = "e0f1cdd66f0bba354824a197a7622d85"
 compatibility_date = "2022-04-22"
