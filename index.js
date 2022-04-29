@@ -25,17 +25,26 @@ async function handleRequest(request) {
 
   console.log(`data to auth: ${dataToAuthenticate}`);
 
-  const verified = await verifyMessage(dataToAuthenticate, signature);
+  const verified = await verifyMessage(signature, dataToAuthenticate);
 
   if (!verified) {
     const body = 'Invalid Signature';
     return new Response(body, { status: 403 });
   } 
 
-  if (Date.now() > expiry) {
+  console.log('request verified!!!');
+
+  const now = Date.now()/1000;
+
+  console.log(`expiry: ${expiry}, now: ${now}`);
+
+  if (now > expiry) {
     const body = `URL expired at ${new Date(expiry)}`;
     return new Response(body, { status: 403 });
-  } */
+  } 
+  
+  console.log('request not expired!!!')
+
 
   const cacheKey = `https://${url.hostname}${url.pathname}`;
 
@@ -44,9 +53,7 @@ async function handleRequest(request) {
   // TODO: Add S3 specific logic for fetching
   console.log(`fetching object ${url.pathname} from s3`);
 
-  const s3Bucket = "cloudflare-poc-quay-storage";
-
-  const s3Host = `${s3Bucket}.s3.amazonaws.com`;
+  const s3Host = `${QUAY_S3_BUCKET}.s3.amazonaws.com`;
 
   url.searchParams.delete('cf_expiry')
   url.searchParams.delete('cf_sign')
@@ -58,14 +65,12 @@ async function handleRequest(request) {
 
   let response = await fetch(fetchUrl, {
     cf: {
-      // Always cache this fetch regardless of content type
-      // for a max of 5 seconds before revalidating the resource
       cacheTtl: 50,
       cacheEverything: true,
-      //Enterprise only feature, see Cache API for other plans
       cacheKey: cacheKey,
     },
   });
+
   // Reconstruct the Response object to make its headers mutable.
   response = new Response(response.body, response);
 
