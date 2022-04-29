@@ -5,7 +5,8 @@ manifests
 
 # Development
 
-You need to install and setup the CloudFlare CLI tool [`wrangler`](https://developers.cloudflare.com/workers/cli-wrangler/)
+You need to install and setup the CloudFlare CLI tool
+[`wrangler`](https://developers.cloudflare.com/workers/cli-wrangler/)
 
 Update the `wrangler.toml` with your config and run the following commands
 

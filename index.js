@@ -1,7 +1,7 @@
 /* Handler for requests to CloudFlare. The signature is 
- * passed as a query param `signature` along with the
- * expiry time as `expiry`. We verify the signature
- * first and then check if the request not expired.
+ * passed as a query param `cf_sign` along with the
+ * expiry time as `cf_expiry`. We verify the signature
+ * first and then check if the request has not expired.
  * Once validated, we fetch the object from S3 and
  * cache the result with a custom cache key which 
  * is the URL 
@@ -49,8 +49,6 @@ async function handleRequest(request) {
   const cacheKey = `https://${url.hostname}${url.pathname}`;
 
   console.log(`cache key : ${cacheKey}`);
-
-  // TODO: Add S3 specific logic for fetching
   console.log(`fetching object ${url.pathname} from s3`);
 
   const s3Host = `${QUAY_S3_BUCKET}.s3.amazonaws.com`;
@@ -63,9 +61,11 @@ async function handleRequest(request) {
 
   console.log(`fetch URL : ${fetchUrl}`);
 
+  const cacheTtl = CACHE_TTL || 60;
+
   let response = await fetch(fetchUrl, {
     cf: {
-      cacheTtl: 50,
+      cacheTtl: cacheTtl,
       cacheEverything: true,
       cacheKey: cacheKey,
     },
