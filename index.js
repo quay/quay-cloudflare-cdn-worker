@@ -184,5 +184,3 @@ async function verifyMessage(sig, message) {
     return await crypto.subtle.verify(signAlgorithm, pub, decodedSig, data)
 }
 
-export {verifyMessage};
-
