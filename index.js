@@ -13,6 +13,11 @@ async function handleRequest(request) {
   // Only use the path for the cache key, removing query strings
   // and always store using HTTPS, for example, https://www.example.com/file-uri-here
   console.log(`got request : ${url}`)
+
+  if (url.pathname === '/health') {
+    return new Response('ok');
+  }
+
   if (!url.searchParams.has('cf_sign') || !url.searchParams.has('cf_expiry')) {
     return new Response('Missing query parameter', { status: 403 });
   }
