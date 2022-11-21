@@ -8,7 +8,10 @@ zone_id = "e0f1cdd66f0bba354824a197a7622d85"
 compatibility_date = "2022-04-22"
 
 [vars]
-QUAY_S3_BUCKET = "cloudflare-poc-quay-storage"
+QUAY_PRIMARY_REGION="us-east-1"
+QUAY_PRIMARY_S3_BUCKET = "cloudflare-poc-quay-storage"
+QUAY_SECONDARY_REGION = "us-east-2"
+QUAY_SECONDARY_S3_BUCKET = "cloudflare-poc-quay-storage"
 
 CLOUDFLARE_PUBLIC_KEY = '''
 -----BEGIN PUBLIC KEY-----

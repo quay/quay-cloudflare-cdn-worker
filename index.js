@@ -13,6 +13,10 @@ async function handleRequest(request) {
   // Only use the path for the cache key, removing query strings
   // and always store using HTTPS, for example, https://www.example.com/file-uri-here
   console.log(`got request : ${url}`)
+ 
+  if (!QUAY_PRIMARY_S3_BUCKET || !QUAY_PRIMARY_REGION) {
+    return new Response('Primary origin bucket/region not set', {status: 500})
+  }
 
   if (url.pathname === '/health') {
     return new Response('ok');
@@ -24,7 +28,8 @@ async function handleRequest(request) {
 
   const expiry = Number(url.searchParams.get('cf_expiry'));
   const dataToAuthenticate = `${url.pathname}@${expiry}`;
-  const signature = url.searchParams.get('cf_sign')
+  const signature = url.searchParams.get('cf_sign');
+  const s3_region = url.searchParms.get('region');
 
   console.log(`data to auth: ${dataToAuthenticate}`);
 
@@ -53,10 +58,18 @@ async function handleRequest(request) {
   console.log(`cache key : ${cacheKey}`);
   console.log(`fetching object ${url.pathname} from s3`);
 
-  const s3Host = `${QUAY_S3_BUCKET}.s3.amazonaws.com`;
+  // default to primary bucket
+  let origin_s3_bucket = QUAY_PRIMARY_S3_BUCKET;
+
+  if (QUAY_SECONDARY_REGION === s3_region) {
+    origin_s3_bucket = QUAY_SECONDARY_S3_BUCKET;
+  }
+
+  const s3Host = `${origin_s3_bucket}.s3.amazonaws.com`;
 
   url.searchParams.delete('cf_expiry')
   url.searchParams.delete('cf_sign')
+  url.searchParams.delete('region')
   url.host = s3Host;
 
   const fetchUrl = url.toString();
