@@ -29,7 +29,7 @@ async function handleRequest(request) {
   const expiry = Number(url.searchParams.get('cf_expiry'));
   const dataToAuthenticate = `${url.pathname}@${expiry}`;
   const signature = url.searchParams.get('cf_sign');
-  const s3_region = url.searchParms.get('region');
+  const s3_region = url.searchParams.get('region');
 
   console.log(`data to auth: ${dataToAuthenticate}`);
 
