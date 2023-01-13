@@ -78,11 +78,22 @@ async function handleRequest(request) {
 
   const cacheTtl = CACHE_TTL || 60;
 
+  const rangeHeaderValue = request.headers.get('range');
+  console.log(`range header value ${rangeHeaderValue}`);
+
+  requestHeaders = {}
+  if (rangeHeaderValue) {
+    requestHeaders['Range'] = rangeHeaderValue;
+  }
+
   let response = await fetch(fetchUrl, {
     cf: {
       cacheTtl: cacheTtl,
       cacheEverything: true,
       cacheKey: cacheKey,
+    },
+    headers: {
+      ...requestHeaders,
     },
   });
 
@@ -91,6 +102,7 @@ async function handleRequest(request) {
 
   // Set cache control headers to cache on browser for 25 minutes
   response.headers.set('Cache-Control', 'max-age=1500');
+
   return response;
 }
 
