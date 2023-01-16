@@ -5,7 +5,16 @@
  * Once validated, we fetch the object from S3 and
  * cache the result with a custom cache key which 
  * is the URL 
+ * **NOTE** Do not split this file into multiple files. 
+ * The app-interface/terrform integration
  * */
+
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400",
+}
 
 async function handleRequest(request) {
   const url = new URL(request.url);
@@ -13,9 +22,15 @@ async function handleRequest(request) {
   // Only use the path for the cache key, removing query strings
   // and always store using HTTPS, for example, https://www.example.com/file-uri-here
   console.log(`got request : ${url}`)
- 
+
   if (!QUAY_PRIMARY_S3_BUCKET || !QUAY_PRIMARY_REGION) {
-    return new Response('Primary origin bucket/region not set', {status: 500})
+    return new Response('Primary origin bucket/region not set', { status: 500 })
+  }
+
+  // CORS are required for in-browser requests to the CDN
+  // eg: log export API
+  if (request.method === 'OPTIONS') {
+    return handleOptions(request);
   }
 
   if (url.pathname === '/health') {
@@ -38,19 +53,19 @@ async function handleRequest(request) {
   if (!verified) {
     const body = 'Invalid Signature';
     return new Response(body, { status: 403 });
-  } 
+  }
 
   console.log('request verified!!!');
 
-  const now = Date.now()/1000;
+  const now = Date.now() / 1000;
 
   console.log(`expiry: ${expiry}, now: ${now}`);
 
   if (now > expiry) {
     const body = `URL expired at ${new Date(expiry)}`;
     return new Response(body, { status: 403 });
-  } 
-  
+  }
+
   console.log('request not expired!!!')
 
   const cacheKey = `https://${url.hostname}${url.pathname}`;
@@ -81,7 +96,8 @@ async function handleRequest(request) {
   const rangeHeaderValue = request.headers.get('range');
   console.log(`range header value ${rangeHeaderValue}`);
 
-  requestHeaders = {}
+  const requestHeaders = {};
+
   if (rangeHeaderValue) {
     requestHeaders['Range'] = rangeHeaderValue;
   }
@@ -103,7 +119,25 @@ async function handleRequest(request) {
   // Set cache control headers to cache on browser for 25 minutes
   response.headers.set('Cache-Control', 'max-age=1500');
 
+  // Set CORS headers
+  response.headers.set("Access-Control-Allow-Origin", "*")
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
   return response;
+}
+
+function handleOptions(request) {
+  const respHeaders = {
+    ...corsHeaders,
+  }
+
+  if (request.headers.get("Access-Control-Request-Headers") !== null) {
+    respHeaders["Access-Control-Allow-Headers"] = request.headers.get("Access-Control-Request-Headers");
+  }
+
+  return new Response(null, {
+    headers: respHeaders,
+  })
 }
 
 addEventListener('fetch', event => {
@@ -205,12 +239,12 @@ function importPublicKey(pemKey) {
 }
 
 async function verifyMessage(sig, message) {
-    console.log('verifyMessage')
-    const decodedSig = base64StringToArrayBuffer(sig)
-    const data = textToArrayBuffer(message)
+  console.log('verifyMessage')
+  const decodedSig = base64StringToArrayBuffer(sig)
+  const data = textToArrayBuffer(message)
 
-    const publicKeyPem = CLOUDFLARE_PUBLIC_KEY;
-    const pub = await importPublicKey(publicKeyPem);
-    return await crypto.subtle.verify(signAlgorithm, pub, decodedSig, data)
+  const publicKeyPem = CLOUDFLARE_PUBLIC_KEY;
+  const pub = await importPublicKey(publicKeyPem);
+  return await crypto.subtle.verify(signAlgorithm, pub, decodedSig, data)
 }
 
