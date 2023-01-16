@@ -31,7 +31,7 @@ async function handleRequest(request) {
   }
 
   // CORS are required for in-browser requests to the CDN
-  // eg: log export API
+  // eg: archived build logs
   if (request.method === 'OPTIONS') {
     return handleOptions(request);
   }
