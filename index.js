@@ -107,7 +107,7 @@ async function handleRequest(request) {
 
   let response = await fetch(fetchUrl, {
     cf: {
-      cacheTtl: cacheTtl,
+      cacheTtl: parseInt(cacheTtl),
       cacheEverything: true,
       cacheKey: cacheKey,
     },
