@@ -83,7 +83,7 @@ async function handleRequest(request) {
     origin_s3_bucket = QUAY_SECONDARY_S3_BUCKET;
   }
 
-  const s3Host = `${origin_s3_bucket}.s3.{s3_region}.amazonaws.com`;
+  const s3Host = `${origin_s3_bucket}.s3.${s3_region}.amazonaws.com`;
 
   url.searchParams.delete('cf_expiry')
   url.searchParams.delete('cf_sign')
