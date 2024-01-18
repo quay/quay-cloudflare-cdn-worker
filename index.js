@@ -88,6 +88,8 @@ async function handleRequest(request) {
   url.searchParams.delete('cf_expiry')
   url.searchParams.delete('cf_sign')
   url.searchParams.delete('region')
+  url.searchParams.delete('namespace')
+  url.searchParams.delete('username')
   url.host = s3Host;
 
   const fetchUrl = url.toString();
