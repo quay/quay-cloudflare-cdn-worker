@@ -104,10 +104,10 @@ async function handleRequest(request) {
   const rangeHeaderValue = request.headers.get('range');
   console.log(`range header value ${rangeHeaderValue}`);
 
-  const requestHeaders = {};
+  const originRequestHeaders = {};
 
   if (rangeHeaderValue) {
-    requestHeaders['Range'] = rangeHeaderValue;
+    originRequestHeaders['Range'] = rangeHeaderValue;
   }
 
   let response = await fetch(fetchUrl, {
@@ -117,7 +117,7 @@ async function handleRequest(request) {
       cacheKey: cacheKey,
     },
     headers: {
-      ...requestHeaders,
+      ...originRequestHeaders,
     },
   });
 
