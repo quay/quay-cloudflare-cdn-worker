@@ -24,7 +24,10 @@ async function handleRequest(request) {
 
   // Only use the path for the cache key, removing query strings
   // and always store using HTTPS, for example, https://www.example.com/file-uri-here
-  console.log(`got request : ${url}`)
+
+  let requestHeaders = JSON.stringify([...request.headers], null, 2);
+  console.log(`request ${url} Request headers: ${requestHeaders}`);
+
 
   if (!QUAY_PRIMARY_S3_BUCKET || !QUAY_PRIMARY_REGION) {
     return new Response('Primary origin bucket/region not set', { status: 500 })
