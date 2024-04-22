@@ -93,6 +93,7 @@ async function handleRequest(request) {
   url.searchParams.delete('region')
   url.searchParams.delete('namespace')
   url.searchParams.delete('username')
+  url.searchParams.delete('repo_name')
   url.host = s3Host;
 
   const fetchUrl = url.toString();
